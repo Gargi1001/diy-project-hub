@@ -1,14 +1,7 @@
 [build]
-  # Base directory tells Netlify where the project lives
-  base = "client"
-
-  # Command is run inside the 'client' directory
+  base = ""
+  publish = "client/dist"
   command = "npm run build"
-
-  # Publish path tells Netlify where the final, built files are located, 
-  # relative to the repository root.
-  publish = "client/dist" # <-- Ensure this is client/dist, NOT just dist
-
 [context.production.environment]
   # Ensure the environment variable is set here
   VITE_API_URL = "diy-project-hub-production.up.railway.app"
