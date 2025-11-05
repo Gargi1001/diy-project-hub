@@ -1,7 +1,7 @@
 [build]
   base = ""
   publish = "client/dist"
-  command = "npm run build"
+  command = "npm install --prefix client && npm run build --prefix client"
 [context.production.environment]
   # Ensure the environment variable is set here
   VITE_API_URL = "diy-project-hub-production.up.railway.app"
