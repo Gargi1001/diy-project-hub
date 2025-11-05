@@ -1,0 +1,13 @@
+[build]
+  # Tell Netlify to look inside the client folder for the project files
+  base = "client"
+
+  # Tell Netlify to run the build command inside the 'client' folder
+  command = "npm run build"
+
+  # Tell Netlify that the final, built files are in the 'dist' folder
+  publish = "client/dist"
+
+[context.production.environment]
+  # This sets the necessary environment variable for the live site
+  VITE_API_URL = "https://your-railway-url.up.railway.app"
