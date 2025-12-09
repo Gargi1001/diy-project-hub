@@ -123,7 +123,7 @@ const CreateProject = () => {
       <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800">Share Your DIY Project</h2>
 
       {/* --- Basic Info Fields --- */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="bg-slate-50 min-h-screen flex flex-col font-sans">
           
         {/* Title */}
         <div className="mb-4">

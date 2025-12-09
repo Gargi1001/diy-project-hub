@@ -54,30 +54,38 @@ const ProjectList = () => {
             <Link 
               key={project._id} 
               to={`/projects/${project._id}`} 
-              className="bg-white shadow-xl rounded-2xl overflow-hidden 
-                         transform transition duration-300 
-                         hover:shadow-2xl hover:scale-[1.01]" // <-- Card Styling Fix
+              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col h-full"
             >
               
-              {/* Image with rounded corners */}
-              <img 
-                src={project.imageUrl || 'placeholder.jpg'} // Use a placeholder if image is missing
-                alt={project.name}
-                className="w-full h-48 object-cover rounded-t-2xl" 
-              />
+              {/* Image Area with Overlay Gradient */}
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src={project.imageUrl || 'https://via.placeholder.com/400x300?text=DIY+Project'} 
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
               
-              <div className="p-5">
-                {/* Project Title */}
-                <h2 className="text-2xl font-semibold mb-2 text-gray-900">{project.name}</h2>
+              <div className="p-6 flex flex-col flex-grow">
+                {/* Header Section */}
+                <div className="flex justify-between items-start mb-3">
+                  <h2 className="text-xl font-bold text-gray-800 leading-tight">{project.title}</h2>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide ${getDifficultyClass(project.difficulty)}`}>
+                    {project.difficulty}
+                  </span>
+                </div>
                 
-                {/* Project Description (Truncated) */}
-                <p className="text-gray-600 mb-4">{project.description ? project.description.substring(0, 100) + '...' : 'No description provided.'}</p>
+                {/* Description */}
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+                  {project.description}
+                </p>
                 
-                {/* Difficulty Badge with Color Coding */}
-                <span className={`text-sm font-semibold px-3 py-1 rounded-full ${getDifficultyClass(project.difficulty)}`}>
-                  {project.difficulty}
-                </span>
-
+                {/* Footer of Card */}
+                <div className="mt-auto pt-4 border-t border-gray-100 flex items-center text-blue-600 font-semibold text-sm group">
+                  View Details 
+                  <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                </div>
               </div>
             </Link>
           ))

@@ -30,17 +30,17 @@ const App = () => {
       {/* min-h-screen flex flex-col ensures the footer sticks to the bottom */}
       <div className="bg-gray-50 min-h-screen flex flex-col"> 
         
-        {/* Simple Navigation Header (based on your code snippet) */}
-        <nav className="bg-white shadow-md">
+        {/* Modern Gradient Navigation Header */}
+        <nav className="bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-lg">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <Link to="/" className="text-2xl font-bold text-gray-800">
-              DIY Project Hub
+            <Link to="/" className="text-2xl font-extrabold tracking-wide hover:text-blue-400 transition duration-300">
+              DIY <span className="text-blue-400">Hub</span>
             </Link>
             <Link 
               to="/create" 
-              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-full shadow-md transition transform hover:scale-105"
             >
-              + Create Project
+              + New Project
             </Link>
           </div>
         </nav>
