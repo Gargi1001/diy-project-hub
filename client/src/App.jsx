@@ -1,37 +1,68 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import ProjectList from './components/ProjectList';
-import CreateProject from './components/CreateProject'; // Import the new component
+// Use BrowserRouter, Routes, and Route for routing
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'; 
 
-function App() {
+// Import your components
+import ProjectList from './components/ProjectList';
+import CreateProject from './components/CreateProject';
+import ProjectDetails from './components/ProjectDetails'; // 👈 Ensure this path is correct
+
+// --- 1. Footer Component Definition ---
+const Footer = () => {
   return (
-    <BrowserRouter>
-      <div className="bg-gray-50 min-h-screen">
+    <footer className="bg-gray-800 text-white p-6 mt-12">
+      <div className="container mx-auto flex justify-between items-center text-sm">
+        <p>&copy; {new Date().getFullYear()} DIY Project Hub. All rights reserved.</p>
+        <div className="flex space-x-4">
+          <a href="#" className="hover:text-blue-400 transition duration-200">About</a>
+          <a href="#" className="hover:text-blue-400 transition duration-200">Contact</a>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+// --- 2. Main App Component ---
+const App = () => {
+  return (
+    // BrowserRouter must wrap the entire application for routing to work
+    <BrowserRouter> 
+      {/* min-h-screen flex flex-col ensures the footer sticks to the bottom */}
+      <div className="bg-gray-50 min-h-screen flex flex-col"> 
         
-        {/* Simple Navigation Header */}
+        {/* Simple Navigation Header (based on your code snippet) */}
         <nav className="bg-white shadow-md">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link to="/" className="text-2xl font-bold text-blue-600">
+          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+            <Link to="/" className="text-2xl font-bold text-gray-800">
               DIY Project Hub
             </Link>
-            <Link
-              to="/create"
-              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
+            <Link 
+              to="/create" 
+              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
             >
               + Create Project
             </Link>
           </div>
         </nav>
+        
+        {/* Main content area */}
+        <main className="flex-grow container mx-auto p-4"> 
+          <Routes>
+            {/* Home Page Route */}
+            <Route path="/" element={<ProjectList />} /> 
+            
+            {/* Create Project Route */}
+            <Route path="/create" element={<CreateProject />} /> 
+            
+            {/* Project Details Route (CRITICAL) */}
+            <Route path="/projects/:id" element={<ProjectDetails />} />
+          </Routes>
+        </main>
 
-        {/* Page Content Area */}
-        <Routes>
-          <Route path="/" element={<ProjectList />} />
-          <Route path="/create" element={<CreateProject />} />
-        </Routes>
-
+        <Footer /> 
       </div>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
