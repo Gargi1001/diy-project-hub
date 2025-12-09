@@ -5,3 +5,8 @@
 [context.production.environment]
   # Ensure the environment variable is set here
   VITE_API_URL = "https://diy-project-hub.onrender.com"
+
+  [[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
