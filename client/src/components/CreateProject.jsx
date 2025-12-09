@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 // URLs for our backend API (Remember to update to live URLs for deployment!)
-// IMPORTANT: For deployment, replace 'http://localhost:5000' with your Railway backend URL
-const UPLOAD_URL = 'https://diy-project-hub-production.up.railway.app/api/upload';
-const PROJECTS_URL = 'https://diy-project-hub-production.up.railway.app/api/projects';
+// IMPORTANT: Replace 'http://localhost:5000' with your live Render URL.
+const UPLOAD_URL = `https://diy-project-hub.onrender.com/api/upload`;
+const PROJECTS_URL = `https://diy-project-hub.onrender.com/api/projects`;;
 
 const CreateProject = () => {
   const navigate = useNavigate(); 
@@ -29,6 +29,7 @@ const CreateProject = () => {
   const handleMaterialChange = (index, field, value) => {
     const newMaterials = [...materials];
     
+    // Ensure cost and quantity are numbers
     if (field === 'cost') {
         newMaterials[index].cost = parseFloat(value) || 0;
     } else if (field === 'quantity') {
@@ -69,15 +70,17 @@ const CreateProject = () => {
 
     let imageUrl = '';
     const formData = new FormData();
-    formData.append('projectImage', image);
+    formData.append('projectImage', image); // <--- formData.append is HERE
 
     // 1. Upload the Image
     try {
+      // NOTE: UPLOAD_URL must point to your live Render/Railway service
       const { data } = await axios.post(UPLOAD_URL, formData);
       imageUrl = data.filePath;
       setMessage('Image uploaded. Creating project...');
     } catch (err) {
       console.error('Image upload error:', err);
+      // If upload fails, check backend size limit and Multer configuration!
       setMessage('Image upload failed. Please try again.');
       setIsSubmitting(false);
       setTimeout(() => setMessage(''), 5000); 
@@ -95,10 +98,12 @@ const CreateProject = () => {
         imageUrl,
       };
 
+      // NOTE: PROJECTS_URL must point to your live Render/Railway service
       await axios.post(PROJECTS_URL, projectData); 
       
       setMessage('Project created successfully! Redirecting...');
       
+      // Clear form fields
       setTitle('');
       setDescription('');
       setMaterials([{ item: '', cost: 0, quantity: 1 }]);
@@ -122,10 +127,10 @@ const CreateProject = () => {
     <form className="max-w-3xl mx-auto p-8 bg-white shadow-xl rounded-xl my-10" onSubmit={handleSubmit}>
       <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800">Share Your DIY Project</h2>
 
-      {/* --- Basic Info Fields --- */}
-      <div className="bg-slate-50 min-h-screen flex flex-col font-sans">
-          
-        {/* Title */}
+      {/* --- Basic Info Fields (FIXED: Removed erroneous wrapper div) --- */}
+      <div className="grid md:grid-cols-2 gap-6"> 
+        
+        {/* Project Title */}
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2">Project Title</label>
           <input
@@ -137,7 +142,7 @@ const CreateProject = () => {
           />
         </div>
 
-        {/* Difficulty */}
+        {/* Difficulty Select */}
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2">Difficulty</label>
           <select

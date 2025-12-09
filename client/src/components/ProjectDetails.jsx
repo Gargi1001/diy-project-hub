@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom'; // Import Link for the Edit button
-
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 // IMPORTANT: Ensure this API URL points to your live backend
-const API_URL = 'https://diy-project-hub-production.up.railway.app/api/projects'; 
+const API_URL = 'https://diy-project-hub.onrender.com/api/projects'; 
 
 // --- Helper Function for Difficulty Badge Colors ---
 const getDifficultyClass = (difficulty) => {
