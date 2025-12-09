@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 // URLs for our backend API (Remember to update to live URLs for deployment!)
 // IMPORTANT: For deployment, replace 'http://localhost:5000' with your Railway backend URL
-const UPLOAD_URL = 'http://localhost:5000/api/upload';
-const PROJECTS_URL = 'http://localhost:5000/api/projects';
+const UPLOAD_URL = 'https://diy-project-hub-production.up.railway.app/api/upload';
+const PROJECTS_URL = 'https://diy-project-hub-production.up.railway.app/api/projects';
 
 const CreateProject = () => {
   const navigate = useNavigate(); 

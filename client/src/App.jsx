@@ -1,13 +1,10 @@
 import React from 'react';
-// Use BrowserRouter, Routes, and Route for routing
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'; 
-
-// Import your components
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import ProjectList from './components/ProjectList';
 import CreateProject from './components/CreateProject';
-import ProjectDetails from './components/ProjectDetails'; // 👈 Ensure this path is correct
+import ProjectDetails from './components/ProjectDetails';
+// import EditProject from './components/EditProject'; // Uncomment if you have created this file
 
-// --- 1. Footer Component Definition ---
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white p-6 mt-12">
@@ -22,44 +19,37 @@ const Footer = () => {
   );
 };
 
-// --- 2. Main App Component ---
 const App = () => {
   return (
-    // BrowserRouter must wrap the entire application for routing to work
-    <BrowserRouter> 
-      {/* min-h-screen flex flex-col ensures the footer sticks to the bottom */}
-      <div className="bg-gray-50 min-h-screen flex flex-col"> 
+    <BrowserRouter>
+      <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
         
-        {/* Modern Gradient Navigation Header */}
-        <nav className="bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-lg">
+        {/* Navigation Header */}
+        <nav className="bg-white shadow-md">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <Link to="/" className="text-2xl font-extrabold tracking-wide hover:text-blue-400 transition duration-300">
-              DIY <span className="text-blue-400">Hub</span>
+            <Link to="/" className="text-2xl font-bold text-gray-800">
+              DIY Project Hub
             </Link>
             <Link 
               to="/create" 
-              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-full shadow-md transition transform hover:scale-105"
+              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
             >
-              + New Project
+              + Create Project
             </Link>
           </div>
         </nav>
-        
-        {/* Main content area */}
-        <main className="flex-grow container mx-auto p-4"> 
+
+        {/* Main Content */}
+        <main className="flex-grow container mx-auto p-4">
           <Routes>
-            {/* Home Page Route */}
-            <Route path="/" element={<ProjectList />} /> 
-            
-            {/* Create Project Route */}
-            <Route path="/create" element={<CreateProject />} /> 
-            
-            {/* Project Details Route (CRITICAL) */}
+            <Route path="/" element={<ProjectList />} />
+            <Route path="/create" element={<CreateProject />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
+            {/* <Route path="/projects/:id/edit" element={<EditProject />} /> */}
           </Routes>
         </main>
 
-        <Footer /> 
+        <Footer />
       </div>
     </BrowserRouter>
   );
