@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-// URLs for our backend API (Remember to update to live URLs for deployment!)
-// IMPORTANT: Replace 'http://localhost:5000' with your live Render URL.
-const UPLOAD_URL = `https://diy-project-hub.onrender.com/api/upload`;
-const PROJECTS_URL = `https://diy-project-hub.onrender.com/api/projects`;;
+
+// --- NEW: Read VITE_API_URL from Netlify Environment ---
+// Netlify injects the VITE_API_URL set in your netlify.toml here.
+const API_BASE_URL = import.meta.env.VITE_API_URL; 
+
+// Base URLs are now constructed dynamically:
+const UPLOAD_URL = `${API_BASE_URL}/api/upload`;
+const PROJECTS_URL = `${API_BASE_URL}/api/projects`;
+// --------------------------------------------------------
 
 const CreateProject = () => {
   const navigate = useNavigate(); 
@@ -70,17 +74,16 @@ const CreateProject = () => {
 
     let imageUrl = '';
     const formData = new FormData();
-    formData.append('projectImage', image); // <--- formData.append is HERE
+    formData.append('projectImage', image); 
 
     // 1. Upload the Image
     try {
-      // NOTE: UPLOAD_URL must point to your live Render/Railway service
+      // This uses the correct dynamic UPLOAD_URL
       const { data } = await axios.post(UPLOAD_URL, formData);
       imageUrl = data.filePath;
       setMessage('Image uploaded. Creating project...');
     } catch (err) {
       console.error('Image upload error:', err);
-      // If upload fails, check backend size limit and Multer configuration!
       setMessage('Image upload failed. Please try again.');
       setIsSubmitting(false);
       setTimeout(() => setMessage(''), 5000); 
@@ -98,7 +101,7 @@ const CreateProject = () => {
         imageUrl,
       };
 
-      // NOTE: PROJECTS_URL must point to your live Render/Railway service
+      // This uses the correct dynamic PROJECTS_URL
       await axios.post(PROJECTS_URL, projectData); 
       
       setMessage('Project created successfully! Redirecting...');
@@ -127,7 +130,7 @@ const CreateProject = () => {
     <form className="max-w-3xl mx-auto p-8 bg-white shadow-xl rounded-xl my-10" onSubmit={handleSubmit}>
       <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800">Share Your DIY Project</h2>
 
-      {/* --- Basic Info Fields (FIXED: Removed erroneous wrapper div) --- */}
+      {/* --- Basic Info Fields --- */}
       <div className="grid md:grid-cols-2 gap-6"> 
         
         {/* Project Title */}
@@ -227,7 +230,7 @@ const CreateProject = () => {
               placeholder={`Describe Step ${index + 1}`}
               value={step}
               rows="3"
-              onChange={(e) => handleStepChange(index, e.target.value)}
+              onChange={(e) => handleStepChange(index, 'description', e.target.value)}
               className="px-3 py-2 border rounded-lg w-full resize-none focus:ring-blue-500 focus:border-blue-500 transition duration-150"
             />
           </div>
