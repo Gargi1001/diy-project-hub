@@ -1,161 +1,147 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 
 // IMPORTANT: Ensure this API URL points to your live backend
-// If running locally: 'http://localhost:5000/api/projects'
-// If deploying: use your Railway URL
 const API_URL = 'http://localhost:5000/api/projects'; 
 
-const ProjectList = () => {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  // --- NEW: Search & Filter State ---
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterDifficulty, setFilterDifficulty] = useState('All');
-
-  // Helper for badge colors
-  const getDifficultyClass = (difficulty) => {
+// --- Helper Function for Difficulty Badge Colors ---
+// This function must be defined outside the component or copied here
+const getDifficultyClass = (difficulty) => {
     switch (difficulty) {
-      case 'Easy':
-        return 'bg-green-100 text-green-700 border border-green-200';
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
-      case 'Hard':
-        return 'bg-red-100 text-red-700 border border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border border-gray-200';
+        case 'Easy':
+            return 'bg-green-100 text-green-700 border border-green-200';
+        case 'Medium':
+            return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+        case 'Hard':
+            return 'bg-red-100 text-red-700 border border-red-200';
+        default:
+            return 'bg-gray-100 text-gray-700 border border-gray-200';
     }
-  };
+};
 
+const ProjectDetails = () => {
+  const { id } = useParams(); // Get the project ID from the URL
+  const navigate = useNavigate(); // Initialize useNavigate hook
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // --- Data Fetching ---
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchProject = async () => {
       try {
-        const response = await axios.get(API_URL);
-        setProjects(response.data);
+        const response = await axios.get(`${API_URL}/${id}`);
+        setProject(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('Error fetching project:', error);
         setLoading(false);
       }
     };
+    fetchProject();
+  }, [id]);
 
-    fetchProjects();
-  }, []);
-
-  // --- NEW: Filtering Logic ---
-  const filteredProjects = projects.filter((project) => {
-    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDifficulty = filterDifficulty === 'All' || project.difficulty === filterDifficulty;
-    return matchesSearch && matchesDifficulty;
-  });
+  // --- DELETE Handler ---
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      try {
+        // Send DELETE request to the backend
+        await axios.delete(`${API_URL}/${id}`);
+        
+        // Redirect back to the homepage
+        navigate('/');
+        
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        alert('Failed to delete project. Check the console for details.');
+      }
+    }
+  };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <p className="text-center mt-10 text-xl">Loading project details...</p>;
+  }
+  
+  if (!project) {
+    return <p className="text-center mt-10 text-xl text-red-600">Project not found.</p>;
   }
 
+  // Calculate total cost (Crucial for the highlight box)
+  const totalCost = project.materials ? project.materials.reduce((acc, mat) => acc + mat.cost * mat.quantity, 0) : 0;
+
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 my-10 bg-white rounded-xl shadow-2xl">
       
-      {/* --- Header Section --- */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Discover DIY Projects</h1>
-        <p className="text-lg text-gray-600">Explore creative ideas and build something amazing today.</p>
-      </div>
-
-      {/* --- NEW: Search and Filter Controls --- */}
-      <div className="flex flex-col md:flex-row gap-4 mb-10 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        
-        {/* Search Input */}
-        <div className="relative w-full md:w-1/2">
-          <input 
-            type="text" 
-            placeholder="Search projects..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-          />
-          {/* Search Icon SVG */}
-          <svg className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-
-        {/* Filter Dropdown */}
-        <div className="w-full md:w-auto">
-          <select 
-            value={filterDifficulty}
-            onChange={(e) => setFilterDifficulty(e.target.value)}
-            className="w-full md:w-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer bg-white"
+      {/* --- TITLE and DELETE Button --- */}
+      <div className="flex justify-between items-center mb-6 border-b pb-4">
+          <h1 className="text-5xl font-extrabold text-gray-900">{project.title}</h1>
+          
+          <button 
+              onClick={handleDelete}
+              className="bg-red-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-700 transition duration-300 shadow-md transform hover:scale-[1.02]"
           >
-            <option value="All">All Levels</option>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
-        </div>
+              Delete Project
+          </button>
       </div>
 
-      {/* --- Projects Grid --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredProjects.length === 0 ? (
-          <div className="col-span-full text-center py-20">
-            <p className="text-xl text-gray-500">No projects found matching your search.</p>
-            <button 
-              onClick={() => {setSearchTerm(''); setFilterDifficulty('All');}}
-              className="mt-4 text-blue-600 hover:underline font-semibold"
-            >
-              Clear Filters
-            </button>
+      {/* Difficulty Badge and Description */}
+      <span className={`text-lg font-semibold px-4 py-1 rounded-full ${getDifficultyClass(project.difficulty)}`}>
+        {project.difficulty}
+      </span>
+      
+      <p className="text-xl text-gray-600 mt-6 mb-8">{project.description}</p>
+
+      {/* --- TWO COLUMN LAYOUT --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        
+        {/* COLUMN 1: IMAGE AND STEPS (2/3 width) */}
+        <div className="lg:col-span-2">
+          <img 
+            src={project.imageUrl || 'https://via.placeholder.com/800x600?text=DIY+Project'} 
+            alt={project.title} 
+            className="w-full h-auto max-h-[600px] object-cover rounded-lg shadow-lg mb-10"
+          />
+
+          {/* PROJECT STEPS */}
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">How to Build It</h2>
+          <ol className="space-y-6">
+            {project.steps && project.steps.map((step, index) => (
+              <li key={index} className="flex items-start">
+                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center 
+                               bg-blue-600 text-white rounded-full font-extrabold text-lg mr-4">
+                  {index + 1}
+                </span>
+                <p className="text-lg text-gray-700 pt-0.5">{step}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* COLUMN 2: MATERIALS AND COST (1/3 width) */}
+        <div className="lg:col-span-1 space-y-8">
+          
+          {/* --- COST ESTIMATOR HIGHLIGHT --- */}
+          <div className="bg-green-600 text-white p-6 rounded-xl shadow-xl transform transition duration-300 hover:scale-[1.02]">
+            <p className="text-xl font-medium mb-1">Estimated Total Cost</p>
+            <p className="text-6xl font-extrabold">${totalCost.toFixed(2)}</p>
           </div>
-        ) : (
-          filteredProjects.map(project => (
-            <Link 
-              key={project._id} 
-              to={`/projects/${project._id}`} 
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col h-full group"
-            >
-              
-              {/* Image Area */}
-              <div className="relative h-56 overflow-hidden">
-                <img 
-                  src={project.imageUrl || 'https://via.placeholder.com/400x300?text=DIY+Project'} 
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
-              </div>
-              
-              <div className="p-6 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-3">
-                  <h2 className="text-xl font-bold text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-                    {project.title}
-                  </h2>
-                  <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide ${getDifficultyClass(project.difficulty)}`}>
-                    {project.difficulty}
-                  </span>
-                </div>
-                
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
-                  {project.description}
-                </p>
-                
-                <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
-                  <span className="text-gray-500 font-medium">View Tutorial</span>
-                  <span className="text-blue-600 transform group-hover:translate-x-1 transition-transform">→</span>
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
+
+          {/* MATERIALS LIST */}
+          <div className="bg-gray-100 p-6 rounded-xl shadow-md">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Materials Needed</h3>
+            <ul className="space-y-3">
+              {project.materials && project.materials.map((mat, index) => (
+                <li key={index} className="flex justify-between text-gray-700 text-lg border-b border-gray-300 pb-2">
+                  <span>{mat.item} ({mat.quantity}x)</span>
+                  <span className="font-semibold">${(mat.cost * mat.quantity).toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ProjectList;
+export default ProjectDetails;
