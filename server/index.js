@@ -1,45 +1,40 @@
-// server/index.js (or server/server.js)
+// server/index.js
+
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
+const cors = require('cors'); // <--- Make sure this is imported
 const path = require('path');
 require('dotenv').config(); 
 
-const projectRoutes = require('./routes/projects'); // Assuming you have this route
-const uploadRoutes = require('./routes/upload'); // <--- IMPORT THE UPLOAD ROUTE HERE
+const projectRoutes = require('./routes/projects');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
-
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI; 
 
-// --- CRITICAL BODY LIMIT FIX (For Image Upload Failure) ---
-app.use(express.json({ limit: '500mb' })); 
-app.use(express.urlencoded({ limit: '500mb', extended: true })); 
-// --------------------------------------------------------
-
-// CORS setup (replace placeholder with your Netlify domain)
+// --- CRITICAL CORS FIX ---
+// We explicitly allow your Netlify URL here
 app.use(cors({
-  origin: ['https://your-netlify-domain.netlify.app', 'http://localhost:5173'], 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: [
+    'https://starlit-cookies-395f15.netlify.app', // Your Live Frontend
+    'http://localhost:5173'                         // Your Local Frontend
+  ],
   credentials: true
 }));
+// -------------------------
 
-// --- Database Connection ---
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Increase body limit for images
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ limit: '50mb', extended: true })); 
 
+// ... rest of your database connection and routes ...
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log(err));
 
-// --- ROUTE SETUP ---
 app.use('/api/projects', projectRoutes);
-app.use('/api/upload', uploadRoutes); // <--- USE THE UPLOAD ROUTE HERE
+app.use('/api/upload', uploadRoutes);
 
-// Optional: Serve files if you were using local storage
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-// --- Start Server ---
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
