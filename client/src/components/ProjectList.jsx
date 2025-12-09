@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-// IMPORTANT: Ensure this API URL points to your live backend
-const API_URL = 'https://diy-project-hub.onrender.com/api/projects'; 
-
+// --- NEW: Read VITE_API_URL from Netlify Environment ---
+const API_BASE_URL = import.meta.env.VITE_API_URL; 
+// The main list only needs the projects endpoint:
+const API_URL = `${API_BASE_URL}/api/projects`;
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
