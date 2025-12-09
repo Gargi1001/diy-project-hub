@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 // --- NEW: Read VITE_API_URL from Netlify Environment ---
 // Netlify injects the VITE_API_URL set in your netlify.toml here.
 const API_BASE_URL = import.meta.env.VITE_API_URL; 
-
+console.log("API URL:", API_BASE_URL);
 // Base URLs are now constructed dynamically:
 const UPLOAD_URL = `${API_BASE_URL}/api/upload`;
 const PROJECTS_URL = `${API_BASE_URL}/api/projects`;
