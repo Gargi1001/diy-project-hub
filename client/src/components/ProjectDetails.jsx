@@ -1,118 +1,146 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-
-// Utility function copied from ProjectList.jsx for consistent color coding
-const getDifficultyClass = (difficulty) => {
-    switch (difficulty) {
-        case 'Easy':
-            return 'bg-green-100 text-green-800';
-        case 'Medium':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'Hard':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
-};
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
 // --- NEW: Read VITE_API_URL from Netlify Environment ---
-const API_BASE_URL = import.meta.env.VITE_API_URL; 
-// The main list only needs the projects endpoint:
+// This ensures we connect to the live Render backend
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 const API_URL = `${API_BASE_URL}/api/projects`;
+// --------------------------------------------------------
+
 const ProjectDetails = () => {
-  const { id } = useParams(); // Get the project ID from the URL
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [project, setProject] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    // Get the ID from the URL parameter (e.g., /project/657...)
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-  // Fetch project data when the component loads
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/${id}`);
-        setProject(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching project:', error);
-        setLoading(false);
-      }
+    // --- Fetch Project Data ---
+    useEffect(() => {
+        const fetchProject = async () => {
+            try {
+                // Fetch request to the single project endpoint: /api/projects/:id
+                const response = await axios.get(`${API_URL}/${id}`);
+                setProject(response.data);
+                setIsLoading(false);
+            } catch (err) {
+                console.error("Error fetching project:", err);
+                setError("Project not found or failed to load data.");
+                setIsLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchProject();
+        }
+    }, [id]);
+
+    // --- Delete Project Functionality ---
+    const handleDelete = async () => {
+        if (window.confirm('Are you absolutely sure you want to permanently delete this project?')) {
+            try {
+                // Send DELETE request to your Render backend
+                await axios.delete(`${API_URL}/${id}`); 
+                
+                alert('Project deleted successfully!');
+                // Redirect user back to the home page after deletion
+                navigate('/'); 
+            } catch (error) {
+                console.error('Failed to delete project:', error);
+                alert('Failed to delete project. Check the console for errors.');
+            }
+        }
     };
-    fetchProject();
-  }, [id]);
 
-  if (loading) {
-    return <p className="text-center mt-10 text-xl">Loading project details...</p>;
-  }
-  
-  if (!project) {
-    return <p className="text-center mt-10 text-xl text-red-600">Project not found.</p>;
-  }
+    if (isLoading) {
+        return <div className="text-center mt-20 text-xl font-semibold">Loading Project Details...</div>;
+    }
 
-  // Calculate total cost (Crucial for the highlight box)
-  const totalCost = project.materials.reduce((acc, mat) => acc + mat.cost * mat.quantity, 0);
+    if (error) {
+        return <div className="text-center mt-20 text-xl font-bold text-red-600">{error}</div>;
+    }
 
-  return (
-    <div className="container mx-auto p-6 my-10 bg-white rounded-xl shadow-2xl">
-      <h1 className="text-5xl font-extrabold text-gray-900 mb-4">{project.title}</h1>
-      
-      {/* Difficulty Badge */}
-      <span className={`text-lg font-semibold px-4 py-1 rounded-full ${getDifficultyClass(project.difficulty)}`}>
-        {project.difficulty}
-      </span>
-      
-      <p className="text-xl text-gray-600 mt-6 mb-8">{project.description}</p>
+    if (!project) {
+        return <div className="text-center mt-20 text-xl font-bold text-red-600">Project data is missing.</div>;
+    }
 
-      {/* --- TWO COLUMN LAYOUT --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        
-        {/* COLUMN 1: IMAGE AND STEPS (2/3 width) */}
-        <div className="lg:col-span-2">
-          <img 
-            src={project.imageUrl || 'placeholder.jpg'} 
-            alt={project.title} 
-            className="w-full h-auto max-h-[600px] object-cover rounded-lg shadow-lg mb-10"
-          />
+    const totalCost = project.materials.reduce((acc, mat) => acc + (mat.cost * mat.quantity), 0).toFixed(2);
 
-          {/* PROJECT STEPS */}
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">How to Build It</h2>
-          <ol className="space-y-6">
-            {project.steps.map((step, index) => (
-              <li key={index} className="flex items-start">
-                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center 
-                               bg-blue-600 text-white rounded-full font-extrabold text-lg mr-4">
-                  {index + 1}
-                </span>
-                <p className="text-lg text-gray-700 pt-0.5">{step}</p>
-              </li>
-            ))}
-          </ol>
+    return (
+        <div className="max-w-5xl mx-auto p-6 bg-white shadow-2xl rounded-xl my-10">
+            {/* Header: Title and Delete Button */}
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+                <h1 className="text-4xl font-extrabold text-gray-900">{project.title}</h1>
+                <div className="flex space-x-4">
+                    <Link to="/" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200 shadow-md">
+                        &larr; Back to Home
+                    </Link>
+                    <button 
+                        onClick={handleDelete}
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-200 shadow-md"
+                    >
+                        Delete Project
+                    </button>
+                </div>
+            </div>
+
+            {/* Image and Difficulty */}
+            <div className="md:flex md:space-x-8 mb-8">
+                <div className="md:w-1/2">
+                    <img 
+                        src={project.imageUrl} 
+                        alt={project.title} 
+                        className="w-full h-auto object-cover rounded-lg shadow-lg"
+                    />
+                </div>
+                <div className="md:w-1/2 mt-6 md:mt-0">
+                    <p className="text-lg mb-4">
+                        <span className="font-bold text-gray-700">Difficulty:</span> {project.difficulty}
+                    </p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-3">Project Overview</h2>
+                    <p className="text-gray-600 leading-relaxed">
+                        {project.description}
+                    </p>
+                </div>
+            </div>
+
+            {/* Materials Section */}
+            <div className="mb-8 border p-5 rounded-lg bg-gray-50">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Materials Required</h2>
+                <ul className="space-y-2">
+                    {project.materials.map((mat, index) => (
+                        <li key={index} className="flex justify-between items-center text-gray-700 border-b pb-2 last:border-b-0">
+                            <span className="font-medium">{mat.item} ({mat.quantity} unit{mat.quantity > 1 ? 's' : ''})</span>
+                            <span className="font-semibold text-green-700">${(mat.cost * mat.quantity).toFixed(2)}</span>
+                        </li>
+                    ))}
+                </ul>
+                <div className="text-right mt-4 pt-3 border-t-2 border-gray-300">
+                    <span className="text-xl font-extrabold text-gray-900">Estimated Total Cost: ${totalCost}</span>
+                </div>
+            </div>
+
+            {/* Steps Section */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step-by-Step Tutorial</h2>
+                <ol className="list-decimal list-inside space-y-4 text-gray-700">
+                    {project.steps.map((step, index) => (
+                        <li key={index} className="pl-2">
+                            <span className="font-semibold">Step {index + 1}:</span> {step}
+                        </li>
+                    ))}
+                </ol>
+            </div>
+            
+            <div className="text-center mt-10 pt-5 border-t">
+                <Link to="/" className="text-blue-600 hover:text-blue-800 font-medium transition duration-150">
+                    &larr; Back to All Projects
+                </Link>
+            </div>
         </div>
-
-        {/* COLUMN 2: MATERIALS AND COST (1/3 width) */}
-        <div className="lg:col-span-1 space-y-8">
-          
-          {/* --- COST ESTIMATOR HIGHLIGHT --- */}
-          <div className="bg-green-500 text-white p-6 rounded-xl shadow-xl transform transition duration-300 hover:scale-[1.02]">
-            <p className="text-xl font-medium mb-1">Estimated Total Cost</p>
-            <p className="text-6xl font-extrabold">${totalCost.toFixed(2)}</p>
-          </div>
-
-          {/* MATERIALS LIST */}
-          <div className="bg-gray-100 p-6 rounded-xl shadow-md">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Materials Needed</h3>
-            <ul className="space-y-3">
-              {project.materials.map((mat, index) => (
-                <li key={index} className="flex justify-between text-gray-700 text-lg border-b border-gray-300 pb-2">
-                  <span>{mat.item} ({mat.quantity}x)</span>
-                  <span className="font-semibold">${(mat.cost * mat.quantity).toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ProjectDetails;
